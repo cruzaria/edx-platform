@@ -124,6 +124,7 @@ from openedx.core.djangoapps.programs.utils import get_programs_for_dashboard, g
 from openedx.core.djangoapps.programs.models import ProgramsApiConfig
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 from openedx.core.djangoapps.theming import helpers as theming_helpers
+from openedx.core.djangoapps.models.course_details import CourseDetails
 
 
 log = logging.getLogger("edx.student")
@@ -162,7 +163,9 @@ def index(request, extra_context=None, user=AnonymousUser()):
     if extra_context is None:
         extra_context = {}
 
-    courses = get_courses(user)
+    courses = [course for course in get_courses(user) if CourseDetails.fetch(course.id).featured]
+    for c in courses:
+        log.error('{}  {}'.format(c, CourseDetails.fetch(course.id).featured))
 
     if configuration_helpers.get_value(
             "ENABLE_COURSE_SORTING_BY_START_DATE",
